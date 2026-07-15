@@ -11,11 +11,11 @@ env:
   # Results and other data are stored away from the main branch.
   # This keeps the main branch clean and allows us to clear out
   # objects / history after being built up for long periods of time.
-  BRANCH_NAME: pandas_2026_01_04
+  BRANCH_NAME: shap_2026_07_14
   PYTHON_VERSION: 3.12
-  # Workspace root contains the pandas source checkout at ./pandas/. Without
+  # Workspace root contains the SHAP source checkout. Without
   # this, `python -m asv_runner` would prepend cwd to sys.path and `import
-  # pandas` would resolve to the uncompiled source tree instead of the wheel.
+  # shap` could resolve to the unbuilt source tree instead of the installed package.
   PYTHONSAFEPATH: "1"
 
 permissions:
@@ -32,10 +32,10 @@ jobs:
       contents: write
       issues: write
     steps:
-      - name: Checkout pandas
+      - name: Checkout SHAP
         uses: actions/checkout@v6
         with:
-          repository: pandas-dev/pandas
+          repository: shap/shap
           fetch-depth: 0
 
       - name: Checkout asv-runner results branch
@@ -64,6 +64,13 @@ jobs:
 
       - name: Show environment packages
         run: uv pip freeze
+
+      - name: Prepare ASV workspace
+        run: |
+          mkdir -p asv_bench
+          jq \
+            '.repo = ".." | .branches = ["master"] | .benchmark_dir = "../monitoring" | .html_dir = "html" | .results_dir = "results"' \
+            asv.conf.json > asv_bench/asv.conf.json
 
       - name: Process and push
         run: |

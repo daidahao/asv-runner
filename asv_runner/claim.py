@@ -20,7 +20,7 @@ from pathlib import Path
 
 from asv_runner.util import execute, orphan_push_with_retry, write_github_output
 
-LOOKBACK_COMMITS = 40
+LOOKBACK_COMMITS = 100
 # GitHub kills a job after 6 hours, so a lease older than this with no
 # results is guaranteed to belong to a dead run.
 CLAIM_TTL = timedelta(hours=24)
@@ -69,6 +69,7 @@ def read_claims(shas_path: Path) -> list[Claim]:
 
 
 def write_claims(shas_path: Path, claims: list[Claim]) -> None:
+    shas_path.parent.mkdir(parents=True, exist_ok=True)
     shas_path.write_text("".join(f"{claim.to_line()}\n" for claim in claims))
 
 
@@ -95,7 +96,7 @@ def pick_next_sha(repo: Path, existing_shas: set[str]) -> str | None:
 def find_failure_issue() -> str | None:
     result = execute(
         "gh issue list"
-        " --repo pandas-dev/asv-runner"
+        " --repo shap/asv-runner"
         " --state open"
         " --limit 1000"
         " --json number,title"
@@ -113,14 +114,14 @@ def notify_failures(events: list[str]) -> None:
     if issue_number is None:
         cmd = (
             "gh issue create"
-            " --repo pandas-dev/asv-runner"
+            " --repo shap/asv-runner"
             f' --title "{FAILURE_ISSUE_TITLE}"'
             " --body-file -"
         )
     else:
         cmd = (
             f"gh issue comment {issue_number}"
-            " --repo pandas-dev/asv-runner"
+            " --repo shap/asv-runner"
             " --body-file -"
         )
     execute(cmd, input=body)

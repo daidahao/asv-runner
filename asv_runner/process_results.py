@@ -25,7 +25,7 @@ DERIVED_COLUMNS = [
     "abs_change",
 ]
 GITHUB_ISSUE_LENGTH = 65000
-COMPARE_URL_BASE = "https://github.com/pandas-dev/pandas/compare/"
+COMPARE_URL_BASE = "https://github.com/shap/shap/compare/"
 
 
 def detect_regression(data, window_size: int = 21):
@@ -180,12 +180,12 @@ def fetch_pr_info(*, commit_range: str, sha: str) -> dict | None:
     Returns dict with keys {number, author, approvers}, or None when the range
     spans more than one commit or no PR is associated with sha.
     """
-    cmd = f'gh api "repos/pandas-dev/pandas/compare/{commit_range}"'
+    cmd = f'gh api "repos/shap/shap/compare/{commit_range}"'
     compare = json.loads(execute(cmd))
     if compare.get("ahead_by") != 1:
         return None
 
-    cmd = f'gh api "repos/pandas-dev/pandas/commits/{sha}/pulls"'
+    cmd = f'gh api "repos/shap/shap/commits/{sha}/pulls"'
     prs = json.loads(execute(cmd))
     if not prs:
         return None
@@ -195,7 +195,7 @@ def fetch_pr_info(*, commit_range: str, sha: str) -> dict | None:
     if not author:
         return None
 
-    cmd = f'gh api "repos/pandas-dev/pandas/pulls/{number}/reviews"'
+    cmd = f'gh api "repos/shap/shap/pulls/{number}/reviews"'
     reviews = json.loads(execute(cmd))
     approvers: set[str] = set()
     for review in reviews:
@@ -215,7 +215,7 @@ def make_body(
     shorten: bool = False,
 ) -> str:
     if pr_info is not None:
-        pr_url = f"https://github.com/pandas-dev/pandas/pull/{pr_info['number']}"
+        pr_url = f"https://github.com/shap/shap/pull/{pr_info['number']}"
         body = f"[PR #{pr_info['number']}]({pr_url})\n\n"
         mentions = [f"@{pr_info['author']}", *(f"@{a}" for a in pr_info["approvers"])]
         body += f"cc {' '.join(mentions)}\n\n"
@@ -233,7 +233,7 @@ def make_body(
     for _, regression in regressions.iterrows():
         benchmark = regression["name"]
         params = regression["params"]
-        site_base = "https://pandas-dev.github.io/asv-runner/#"
+        site_base = "https://shap.github.io/asv-runner/#"
         url = f"{site_base}{benchmark}"
         abs_change = time_to_str(regression["abs_change"])
         severity = f"{regression['pct_change']:0.3%} ({abs_change})"
@@ -282,7 +282,7 @@ def raise_issues(input_path: Path, envs_dir: Path) -> None:
     for sha in regression_shas:
         time.sleep(2)
         needle = f"Commit {sha}"
-        cmd = f'gh search issues --repo pandas-dev/asv-runner "{needle}"'
+        cmd = f'gh search issues --repo shap/asv-runner "{needle}"'
         result = execute(cmd)
         if result != "":
             continue
@@ -311,7 +311,7 @@ def raise_issues(input_path: Path, envs_dir: Path) -> None:
 
         cmd = (
             "gh issue create"
-            " --repo pandas-dev/asv-runner"
+            " --repo shap/asv-runner"
             f' --title "{title}"'
             " --body-file -"
         )
@@ -324,7 +324,7 @@ def raise_issues(input_path: Path, envs_dir: Path) -> None:
             envs_diff += "\n```\n\nWARNING: Body has been clipped due to length."
         cmd = (
             f"gh issue comment {issue_number}"
-            " --repo pandas-dev/asv-runner"
+            " --repo shap/asv-runner"
             " --body-file -"
         )
         execute(cmd, input=envs_diff)

@@ -64,9 +64,7 @@ def test_make_body_includes_commit_range_link() -> None:
         benchmarks=_regression_frame(),
         sha="abc123",
     )
-    assert (
-        "[Commit Range](https://github.com/pandas-dev/pandas/compare/aaa...bbb)" in body
-    )
+    assert "[Commit Range](https://github.com/shap/shap/compare/aaa...bbb)" in body
 
 
 def test_make_body_only_includes_target_sha_regressions() -> None:
@@ -99,7 +97,7 @@ def test_make_body_inlines_severity_when_params_empty() -> None:
         sha="abc123",
     )
     msg = (
-        " - [ ] [bench.bar](https://pandas-dev.github.io/asv-runner/#bench.bar)"
+        " - [ ] [bench.bar](https://shap.github.io/asv-runner/#bench.bar)"
         " - 30.000% (1.500s)"
     )
     assert msg in body
@@ -133,7 +131,7 @@ def test_make_body_with_pr_info_links_pr_and_pings_author_and_approvers() -> Non
             "approvers": ["bob", "carol"],
         },
     )
-    assert "[PR #1234](https://github.com/pandas-dev/pandas/pull/1234)" in body
+    assert "[PR #1234](https://github.com/shap/shap/pull/1234)" in body
     assert "cc @alice @bob @carol" in body
     assert "[Commit Range]" not in body
     assert "Subsequent benchmarks may have skipped" not in body
